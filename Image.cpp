@@ -567,7 +567,7 @@ Image Image::BasicThreshold(){
     return temp;
 }
 
-// "OtsuThreshold" performs a thresholding regarding Otsu's histogram processes as the name indicates. Will be improved. Not usable for now.
+// "OtsuThreshold" performs a thresholding regarding Otsu's histogram processes as the name indicates. Will be reviewed. Not usable for now.
 Image Image::OtsuThreshold(){
     // initializing an image object with sizes of interested image
     Image temp(nrows, ncols);

@@ -52,7 +52,7 @@ class Image{
 		Image HistogramEqualization();
 		Image FourierTransform(bool flag = true);
 		Image BasicThreshold();
-		Image OtsuThreshold();
+		Image OtsuThreshold();										// will be reviewed
 		Image uint2double();
 		Image HoughImage();
 		// END OF MEMBER FUNCTIONS
