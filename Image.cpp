@@ -158,66 +158,66 @@ const Image Image::operator=(const Image& img) {
 /*
 Read image from a file.
 */
-	void Image::readImage(char *fname) {
-	ifstream ifp;
-	char dummy[80];
-	unsigned char *img;
-	int rows, cols;
-	int nRows, nCols, nt, maxi;
+    void Image::readImage(char *fname) {
+    ifstream ifp;
+    char dummy[80];
+    unsigned char *img;
+    int rows, cols;
+    int nRows, nCols, nt, maxi;
 
-	ifp.open(fname, ios::in | ios::binary);
+    ifp.open(fname, ios::in | ios::binary);
 
-	if (!ifp) {
-		cout << "readImage: Can't read image: " << fname << endl;
-		exit(1);
-	}
+    if (!ifp) {
+        cout << "readImage: Can't read image: " << fname << endl;
+        exit(1);
+    }
 
-	// identify image format
-	ifp.getline(dummy, 80, '\n');
+    // identify image format
+    ifp.getline(dummy, 80, '\n');
 
-	if (dummy[0] == 'P' && dummy[1] == '5')
-		;
-	else {
-		cout << "readImage: Can't identify image format." << endl;
-		exit(1);
-	}
+    if (dummy[0] == 'P' && dummy[1] == '5')
+        ;
+    else {
+        cout << "readImage: Can't identify image format." << endl;
+        exit(1);
+    }
 
-	// skip the comments
-	ifp.getline(dummy, 80, '\n');
+    // skip the comments
+    ifp.getline(dummy, 80, '\n');
 
-	while (dummy[0] == '#') {
-		ifp.getline(dummy, 80, '\n');
-	}
+    while (dummy[0] == '#') {
+        ifp.getline(dummy, 80, '\n');
+    }
 
-	// read the row number and column number
-	sscanf(dummy, "%d %d", &nCols, &nRows);
+    // read the row number and column number
+    sscanf(dummy, "%d %d", &nCols, &nRows);
 
-	// read the maximum pixel value
-	ifp.getline(dummy, 80, '\n');
-	sscanf(dummy, "%d", &maxi);
-	if (maxi > 255) {
-		cout << "Don't know what to do: maximum value is over 255.\n";
-		exit(1);
-	}
+    // read the maximum pixel value
+    ifp.getline(dummy, 80, '\n');
+    sscanf(dummy, "%d", &maxi);
+    if (maxi > 255) {
+        cout << "Don't know what to do: maximum value is over 255.\n";
+        exit(1);
+    }
 
-	if (image != NULL)
-		delete [] image;
+    if (image != NULL)
+        delete [] image;
 
-	nrows = nRows;
-	ncols = nCols;
-	maximum = 255;
+    nrows = nRows;
+    ncols = nCols;
+    maximum = 255;
 
-	// read the image data
-	img = (unsigned char *) new unsigned char [nRows * nCols];
-	if (!img) {
-		cout << "READIMAGE: Out of memory.\n";
-		exit(1);
-	}
-	image = (float *) new float [nRows * nCols];
-	if (!image) {
-		cout << "READIMAGE: Out of memory.\n";
-		exit(1);
-	}
+    // read the image data
+    img = (unsigned char *) new unsigned char [nRows * nCols];
+    if (!img) {
+        cout << "READIMAGE: Out of memory.\n";
+        exit(1);
+    }
+    image = (float *) new float [nRows * nCols];
+    if (!image) {
+	    cout << "READIMAGE: Out of memory.\n";
+	    exit(1);
+    }
 
     ifp.read((char *)img, (nRows * nCols * sizeof(unsigned char)));
 
