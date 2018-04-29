@@ -235,48 +235,46 @@ Read image from a file.
 Write image buffer to a file.
 */
 void Image::writeImage(char *fname, bool flag) {
-	ofstream ofp;
-	int i, j;
-	int nRows, nCols, nt;
-	unsigned char *img;
+    ofstream ofp;
+    int i, j;
+    int nRows, nCols, nt;
+    unsigned char *img;
+	
+    ofp.open(fname, ios::out | ios::binary);
 
-	ofp.open(fname, ios::out | ios::binary);
+    if (!ofp) {
+        cout << "writeImage: Can't write image: " << fname << endl;
+        exit(1);
+    }
 
-	if (!ofp) {
-		cout << "writeImage: Can't write image: " << fname << endl;
-		exit(1);
-	}
+    ofp << "P5" << endl;
+    ofp << ncols << " " << nrows << endl;
 
+    ofp << 255 << endl;
 
-	ofp << "P5" << endl;
-	ofp << ncols << " " << nrows << endl;
+    // convert the image data type back to unsigned char
+    img = (unsigned char *) new unsigned char [nrows * ncols];
+    if (!img) {
+        cout << "WRITEIMAGE: Out of memory.\n";
+        exit(1);
+    }
 
-
-	ofp << 255 << endl;
-
-	// convert the image data type back to unsigned char
-	img = (unsigned char *) new unsigned char [nrows * ncols];
-	if (!img) {
-		cout << "WRITEIMAGE: Out of memory.\n";
-		exit(1);
-	}
-
-	float maxi = getMaximum();
-	float mini = getMinimum();
+    float maxi = getMaximum();
+    float mini = getMinimum();
 
 
     for (i = 0; i< nrows; i++){
         for (j = 0; j < ncols; j++){
             // rescale if the flag is set
-		    if ((maxi != mini) && flag == true)
-			    img[i * ncols + j] = (unsigned char)  ((image[i * ncols + j]-mini)/(float)(maxi-mini)*255.0);
-		    // any intensity that is larger than the maximum would be set as maximum
-		    else if (image[i * ncols + j] > 255)
-			    img[i * ncols + j] = 255;
-		    else if (image[i * ncols + j] < 0)
-			    img[i * ncols + j] = 0;
-		    else
-			img[i * ncols + j] = (unsigned char)  image[i * ncols + j];
+            if ((maxi != mini) && flag == true)
+                img[i * ncols + j] = (unsigned char)  ((image[i * ncols + j]-mini)/(float)(maxi-mini)*255.0);
+            // any intensity that is larger than the maximum would be set as maximum
+            else if (image[i * ncols + j] > 255)
+                img[i * ncols + j] = 255;
+            else if (image[i * ncols + j] < 0)
+                img[i * ncols + j] = 0;
+            else
+                img[i * ncols + j] = (unsigned char)  image[i * ncols + j];
         }
     }
 	
@@ -289,17 +287,17 @@ void Image::writeImage(char *fname, bool flag) {
 // MEMBER FUNCTIONS FOR IMAGE ENHANCEMENT
 
 Image Image::thresholdImage(float thresholdValue, float lowValue, float highValue) {
-	Image temp;
-	int rows, cols;
+    Image temp;
+    int rows, cols;
 
-	temp.createImage(nrows, ncols);   // temp is a gray-scale image
-	for (rows = 0; rows < nrows; rows++)
-		for (cols = 0; cols < ncols; cols++)
-			if (image[rows * ncols + cols] <= thresholdValue)
-				temp(rows, cols) = lowValue;
-			else
-				temp(rows, cols) = highValue;
-	return temp;
+    temp.createImage(nrows, ncols);   // temp is a gray-scale image
+    for (rows = 0; rows < nrows; rows++)
+        for (cols = 0; cols < ncols; cols++)
+            if (image[rows * ncols + cols] <= thresholdValue)
+                temp(rows, cols) = lowValue;
+            else
+                temp(rows, cols) = highValue;
+     return temp;
 }
 
 // "negativeImage" function makes the image negatived.
@@ -316,26 +314,26 @@ Image Image::negativeImage(){
 }
 // "smoothImage" function can be used to blur any given image by using dimXdim average filter.
 Image Image::smoothImage(int dim){
-	Image temp;
-	temp.createImage(nrows, ncols);
-	float result = 0;
-	float temp_val = 0;
-	float var;
+    Image temp;
+    temp.createImage(nrows, ncols);
+    float result = 0;
+    float temp_val = 0;
+    float var;
 
-	// Blurring the image with an averaging mask by regarding neighborhood specifications.
-	for (int rows = 0; rows < nrows; rows++){
+    // Blurring the image with an averaging mask by regarding neighborhood specifications.
+    for (int rows = 0; rows < nrows; rows++){
         for (int cols = 0; cols < ncols; cols++){
             for (int i = -1 * ((dim - 1) / 2); i < ((dim - 1) / 2 + 1); i++){
                 for(int k = -1 * ((dim - 1) / 2); k < ((dim - 1) / 2 + 1); k++){
-        			if((rows + i < 0) || (cols + k < 0) || (rows + i > nrows - 1) || (cols + k > ncols - 1))
-        				var = 0;
-        			else
-        				var = this->getPix(rows + i, cols + k);
+                    if((rows + i < 0) || (cols + k < 0) || (rows + i > nrows - 1) || (cols + k > ncols - 1))
+                        var = 0;
+                    else
+                        var = this->getPix(rows + i, cols + k);
 
                     temp_val = temp_val + var;
         	    }
             }
-			// Result is the average value for every pixels (x,y).
+            // Result is the average value for every pixels (x,y).
             result = (1.0 / (dim * dim)) * temp_val;
             temp.setPix(rows, cols, result);
             temp_val = 0;
@@ -346,12 +344,12 @@ Image Image::smoothImage(int dim){
 
 // "Gaussian" function can be used for smoothing purposes.
 Image Image::Gaussian(int dim){
-	Image temp;
-	temp.createImage(nrows, ncols);
-	Image h(dim,dim);
-	float temp_val = 0;
-	float var;
-	float sigma = 3.0;
+    Image temp;
+    temp.createImage(nrows, ncols);
+    Image h(dim,dim);
+    float temp_val = 0;
+    float var;
+    float sigma = 3.0;
     float result;
 
     // Generating Gaussian spatial filter
@@ -364,10 +362,10 @@ Image Image::Gaussian(int dim){
         for (int cols = 0; cols < ncols; cols++){
             for (int i = -1 * ((dim - 1) / 2); i < ((dim - 1) / 2 + 1); i++){
         	    for(int k = -1 * ((dim - 1) / 2); k < ((dim - 1) / 2 + 1); k++){
-        		    if((rows + i < 0) || (cols + k < 0) || (rows + i > nrows - 1) || (cols + k > ncols - 1))
-        			    var = 0;
-                    else
-        			    var = this->getPix(rows + i,cols + k) * h.getPix(i + ((dim - 1) / 2), k + ((dim - 1) / 2));
+                        if((rows + i < 0) || (cols + k < 0) || (rows + i > nrows - 1) || (cols + k > ncols - 1))
+                            var = 0;
+                        else
+                            var = this->getPix(rows + i,cols + k) * h.getPix(i + ((dim - 1) / 2), k + ((dim - 1) / 2));
 					
                     temp_val = temp_val + var;
                 }
@@ -382,39 +380,39 @@ Image Image::Gaussian(int dim){
 
 // "Sobel" function has been generated to find edges of any given image by using Sobel operators.
 Image Image::Sobel(){
-	Image temp1(this->getRow(), this->getCol());
-	Image temp2(this->getRow(), this->getCol());
-	Image temp_ret(this->getRow(), this->getCol());
-	float temp_val1 = 0;
-	float temp_val2 = 0;
-	float var1, var2;
-	const int width = 3;
-	const int height = 3;
-	// Sobel operators (filters/masks) generation
-	int sobely[width][height] = {{-1,0,1},{-2,0,2},{-1,0,1}};
-	int sobelx[width][height] = {{-1,-2,-1},{0,0,0},{1,2,1}};
+    Image temp1(this->getRow(), this->getCol());
+    Image temp2(this->getRow(), this->getCol());
+    Image temp_ret(this->getRow(), this->getCol());
+    float temp_val1 = 0;
+    float temp_val2 = 0;
+    float var1, var2;
+    const int width = 3;
+    const int height = 3;
+    // Sobel operators (filters/masks) generation
+    int sobely[width][height] = {{-1,0,1},{-2,0,2},{-1,0,1}};
+    int sobelx[width][height] = {{-1,-2,-1},{0,0,0},{1,2,1}};
 
 
-	Image sobelX(3,3);
-	Image sobelY(3,3);
+    Image sobelX(3,3);
+    Image sobelY(3,3);
 
-	for (int rows = 0; rows < sobelX.getRow(); rows++)
+    for (int rows = 0; rows < sobelX.getRow(); rows++)
         for (int cols = 0; cols < sobelY.getCol(); cols++){
             sobelX.setPix(rows, cols, sobelx[rows][cols]);
-		    sobelY.setPix(rows, cols, sobely[rows][cols]);
+            sobelY.setPix(rows, cols, sobely[rows][cols]);
         }
 
-	for (int rows = 0; rows < this->getRow(); rows++)
+    for (int rows = 0; rows < this->getRow(); rows++)
         for (int cols = 0; cols < this->getCol(); cols++){
             for (int i = -1; i < 2; i++){
                 for(int k = -1; k < 2; k++){
-        		    if((rows + i < 0) || (cols + k < 0) || (rows + i > nrows - 1) || (cols + k > ncols - 1 )){
-        			    var1 = 0;
-        			    var2 = 0;
+                    if((rows + i < 0) || (cols + k < 0) || (rows + i > nrows - 1) || (cols + k > ncols - 1 )){
+                        var1 = 0;
+                        var2 = 0;
                     }
                     else{
-        			    var1 = this->getPix(rows + i, cols + k) * sobelX.getPix(i + 1, k + 1);
-        			    var2 = this->getPix(rows + i, cols + k) * sobelY.getPix(i + 1, k + 1);
+                        var1 = this->getPix(rows + i, cols + k) * sobelX.getPix(i + 1, k + 1);
+                        var2 = this->getPix(rows + i, cols + k) * sobelY.getPix(i + 1, k + 1);
                     }
 
                     temp_val1 = temp_val1 + var1;
@@ -427,7 +425,8 @@ Image Image::Sobel(){
             temp_val1 = 0;
             temp_val2 = 0;
         }
-	// sqrt(Gx.^2 + Gy.^2) operation is being handled
+
+    // sqrt(Gx.^2 + Gy.^2) operation is being handled
     for (int rows = 0; rows < this->getRow(); rows++)
         for (int cols = 0; cols < this->getCol(); cols++)
             temp_ret.setPix(rows, cols, sqrt(pow(temp1.getPix(rows, cols), 2) + pow(temp2.getPix(rows, cols), 2)));
@@ -443,8 +442,8 @@ Image Image::HistogramEqualization(){
     Image temp(nrows, ncols);
     int histogram[256];
     int cumhistogram[256];
-	int Sk[256];
-	double PrRk[256];
+    int Sk[256];
+    double PrRk[256];
 
     // initialize all intensity values with 0
     for(int i = 0; i < 256; i++)
@@ -482,22 +481,22 @@ Image Image::HistogramEqualization(){
 
 // "FourierTransform" function performs a transformation to Fourier space for a given image. This function will be controlled.
 Image Image::FourierTransform(bool flag){
-	Image temp(nrows, ncols);
+    Image temp(nrows, ncols);
 
-	// creating a structure type which, for all samples, has two variables that are real and imaginary parts of a complex number
-	struct NewComplex{
-		float real;
-		float imag;
-	};
+    // creating a structure type which, for all samples, has two variables that are real and imaginary parts of a complex number
+    struct NewComplex{
+        float real;
+        float imag;
+    };
 
-	NewComplex complexImage[nrows * ncols];
+    NewComplex complexImage[nrows * ncols];
 
-	// initializing complex image array
+    // initializing complex image array
     for(int rows = 0; rows < nrows; rows++){
         for(int cols = 0; cols < ncols; cols++){
             complexImage[rows * ncols + cols].real = 0;
             complexImage[rows * ncols + cols].imag = 0;
-	    }
+	}
     }
 	
     float result = 0;
@@ -510,8 +509,8 @@ Image Image::FourierTransform(bool flag){
     for(int rows = 0; rows < nrows; rows++){
         for(int v = 0; v < ncols; v++){
             for(int cols = 0; cols < ncols; cols++){
-			    real += this->getPix(rows, cols) * cos((2 * pi * v * cols) / ncols);
-			    imag += this->getPix(rows, cols) * -1 * sin((2 * pi * v * cols) / ncols);
+                real += this->getPix(rows, cols) * cos((2 * pi * v * cols) / ncols);
+                imag += this->getPix(rows, cols) * -1 * sin((2 * pi * v * cols) / ncols);
             }
             complexImage[rows * ncols + v].real = real;
             complexImage[rows * ncols + v].imag = imag;
@@ -547,24 +546,24 @@ Image Image::FourierTransform(bool flag){
 
 // "BasicThreshold" function performs a simple thresholding process on a given image.
 Image Image::BasicThreshold(){
-	Image temp(nrows,ncols);
-	float thVal = 0.0;
-	float max = 0.0;
+    Image temp(nrows,ncols);
+    float thVal = 0.0;
+    float max = 0.0;
 
-	for(int row = 0; row < nrows; row++)
-		for(int col = 0; col < ncols; col++){
-			if(this->getPix(row, col) > max)
-				max = this->getPix(row,col);
-		}
+    for(int row = 0; row < nrows; row++)
+        for(int col = 0; col < ncols; col++){
+            if(this->getPix(row, col) > max)
+                max = this->getPix(row,col);
+            }
 
-	thVal = (float)0.33 * max;
-	for(int row = 0; row < nrows; row++)
-		for(int col = 0; col < ncols; col++){
-			if(this->getPix(row, col) < thVal)
-				temp.setPix(row, col, 0);
-			else
-				temp.setPix(row, col, 255);
-		}
+    thVal = (float)0.33 * max;
+    for(int row = 0; row < nrows; row++)
+        for(int col = 0; col < ncols; col++){
+            if(this->getPix(row, col) < thVal)
+                temp.setPix(row, col, 0);
+            else
+                temp.setPix(row, col, 255);
+        }
 
     return temp;
 }
@@ -580,7 +579,7 @@ Image Image::OtsuThreshold(){
     float av2[256];
     float betVar[256];
     float glMean = 0.0;
-	float max = 0;
+    float max = 0;
     int th;
 
     // initialize all intensity values with 0
@@ -597,8 +596,8 @@ Image Image::OtsuThreshold(){
 
     // calculate the probability of each intensity, normalized histogram
     float PrRk[256];
-	for(int i = 0; i < 256; i++)
-		PrRk[i] = 0;
+    for(int i = 0; i < 256; i++)
+        PrRk[i] = 0;
 
     for(int i = 0; i < 256; i++){
         PrRk[i] = (float)histogram[i] / size;
@@ -625,10 +624,10 @@ Image Image::OtsuThreshold(){
         //cout << "av2[" << i << "] = " << av2[i] << endl;
         betVar[i] = q1[i] * (1 - q1[i]) * pow((av1[i] - av2[i]), 2);
         //cout << "betVar[" << i << "] = " << betVar[i] << endl;
-		if(betVar[i] > max){
+        if(betVar[i] > max){
             max = betVar[i];
             th = i;
-		}
+        }
     }
     //cout << "th val = " << th << endl;
 
